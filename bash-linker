@@ -1,0 +1,26 @@
+#!/bin/bash
+
+entry="$1"
+source_re='^[[:space:]]*source[[:space:]]+([^[:space:]]+)[[:space:]]*(.*)$'
+result=()
+
+if [[ -z "${entry}" ]]; then
+  echo "Usage: $0 entry"
+  exit 1
+fi
+
+while IFS= read -r line; do
+  if [[ "${line}" =~ ${source_re} ]]; then
+    line="$(<"${BASH_REMATCH[1]}")"
+    args=(${BASH_REMATCH[2]})
+
+    for i in "${!args[@]}"; do
+      n=$((i+1))
+      line="$(echo "${line}" | sed 's/$'$n'/'${args[i]}'/g')"
+    done
+  fi
+
+  result+=("${line}")
+done < "${entry}"
+
+(IFS=$'\n'; echo "${result[*]}")
